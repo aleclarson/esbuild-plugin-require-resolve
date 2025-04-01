@@ -1,7 +1,6 @@
 import { parse, walk } from '@chialab/estransform'
 import type { Plugin } from 'esbuild'
 import { getBuildExtensions } from 'esbuild-extra'
-import { nanoid } from 'nanoid'
 import path from 'path'
 
 /**
@@ -60,7 +59,7 @@ export default function () {
             }
 
             const emittedFile = await build.emitFile(resolvedFilePath)
-            const placeholderId = '$' + nanoid()
+            const placeholderId = '_$' + emittedFile.id
             pathsToRewrite.set(placeholderId, emittedFile.filePath)
 
             helpers.overwrite(
