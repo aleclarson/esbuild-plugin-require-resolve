@@ -3,6 +3,7 @@ import type { Plugin } from 'esbuild'
 import { File, getBuildExtensions } from 'esbuild-extra'
 import fs from 'node:fs'
 import path from 'node:path'
+import spawn from 'tinyspawn'
 
 /**
  * A file loader plugin for esbuild for `require.resolve` statements.
@@ -20,6 +21,59 @@ export default function () {
         build,
         'require-resolve'
       )
+
+      const libraries = new Map<string, File>()
+      const emitLibraries = async (targetPath: string) => {
+        try {
+          // Run otool to get dependencies
+          const otoolResult = await spawn('otool', ['-L', targetPath])
+
+          // Parse the output to find @loader_path dependencies
+          const loaderDependencies = otoolResult.stdout
+            .split('\n')
+            .filter(line => line.includes('@loader_path'))
+            .map(line => {
+              const match = line.trim().match(/^\s*(@loader_path\/[^\s]+)/)
+              return match ? match[1] : null
+            })
+            .filter(Boolean) as string[]
+
+          const loaderPaths = [
+            path.dirname(targetPath),
+            ...(process.env.DYLD_LIBRARY_PATH?.split(':').filter(Boolean) ?? [
+              '/opt/homebrew/lib',
+            ]),
+          ]
+
+          // Resolve and emit each dependency
+          for (const dep of loaderDependencies) {
+            const name = dep.replace('@loader_path/', '')
+            if (libraries.has(name)) {
+              continue
+            }
+            const dir = loaderPaths.find(p =>
+              fs.existsSync(path.resolve(p, name))
+            )
+            if (dir) {
+              const resolvedFilePath = dep.replace('@loader_path', dir)
+              libraries.set(name, await emitFile(resolvedFilePath))
+
+              // Recursively emit dependencies
+              await emitLibraries(resolvedFilePath)
+            } else {
+              console.warn(
+                `[esbuild-plugin-require-resolve] Could not find dependency ${dep}`
+              )
+            }
+          }
+        } catch (error) {
+          // Log error but continue - otool might not be available on all platforms
+          console.warn(
+            `[esbuild-plugin-require-resolve] Failed to process native dependencies for ${targetPath}:`,
+            error
+          )
+        }
+      }
 
       const pathsToRewrite = new Map<string, string>()
       const nodeExtensionRegex = /\brequire\s*\(\s*["'][^"']+\.node["']\s*\)/
@@ -61,6 +115,7 @@ export default function () {
           }
 
           const emittedFile = await emitFile(resolvedFilePath)
+          await emitLibraries(resolvedFilePath)
 
           const placeholderId = '__' + emittedFile.id
           pathsToRewrite.set(placeholderId, emittedFile.filePath)
