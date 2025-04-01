@@ -18,3 +18,22 @@ await esbuild.build({
   plugins: [requireResolvePlugin()],
 })
 ```
+
+## Handling Native Node Modules (`.node` files)
+
+The plugin automatically detects `require()` calls that target `.node` files (native Node.js addons). It performs the following actions:
+
+1.  Copies the referenced `.node` file to the esbuild output directory.
+2.  Rewrites the `require()` call in your bundled code to correctly point to the copied file's new location relative to the output file.
+
+This ensures that native modules used by your project are included in the build output and can be loaded correctly at runtime.
+
+## Automatic Dependency Copying for `.node` Files (macOS)
+
+When a `.node` file is processed on macOS, the plugin goes a step further:
+
+1.  It uses the `otool -L` command to inspect the `.node` file and identify any linked shared libraries (dependencies) that use `@loader_path`.
+2.  It attempts to locate these dependent libraries (e.g., `.dylib` files) in common paths like `/opt/homebrew/lib` or paths specified in the `DYLD_LIBRARY_PATH` environment variable.
+3.  Found dependencies are also copied to the esbuild output directory, ensuring the native addon can find its own required libraries at runtime.
+
+**Note:** This automatic dependency discovery currently relies on the `otool` command and is specific to macOS.
