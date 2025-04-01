@@ -12,8 +12,8 @@ importers:
         specifier: 0.19.0-beta.1
         version: 0.19.0-beta.1
       esbuild-extra:
-        specifier: ^0.4.1
-        version: 0.4.1(esbuild@0.25.2)(typescript@5.8.2)
+        specifier: ^0.4.2
+        version: 0.4.2(esbuild@0.25.2)(typescript@5.8.2)
     devDependencies:
       '@alloc/prettier-config':
         specifier: ^1.0.0
@@ -606,8 +606,8 @@ packages:
   es-module-lexer@1.6.0:
     resolution: {integrity: sha512-qqnD1yMU6tk/jnaMosogGySTZP8YtUgAffA9nMN+E/rjxcfRQ6IEk7IiozUjgxKoFHBGjTLnrHB/YC45r/59EQ==}
 
-  esbuild-extra@0.4.1:
-    resolution: {integrity: sha512-c15uap7eJ4bZWMFjMz44popzy2+xTihFqohuPrGYB5SadR+gwuY6Hya6PQm9y7N3NCA+JJeMDqJLNm+hENKJ9Q==}
+  esbuild-extra@0.4.2:
+    resolution: {integrity: sha512-aOYGwje3iemXSR6FpVVAd1Pw353WwfmO2boAQEh2PElyM4TjYT2yb7PtQ77Fp1ffKpmkdD/AwDgX9j+o33MoZw==}
     peerDependencies:
       esbuild: '>=0.15'
 
@@ -1453,7 +1453,7 @@ snapshots:
 
   es-module-lexer@1.6.0: {}
 
-  esbuild-extra@0.4.1(esbuild@0.25.2)(typescript@5.8.2):
+  esbuild-extra@0.4.2(esbuild@0.25.2)(typescript@5.8.2):
     dependencies:
       '@ampproject/remapping': 2.3.0
       convert-source-map: 2.0.0
