@@ -1,4 +1,5 @@
 {
+  "rewrap.wrappingColumn": 80,
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
