@@ -5,11 +5,20 @@ import fs from 'node:fs'
 import path from 'node:path'
 import spawn from 'tinyspawn'
 
+type Options = {
+  /**
+   * The directory to load native dependencies from.
+   *
+   * @default "./"
+   */
+  installDir?: string
+}
+
 /**
  * A file loader plugin for esbuild for `require.resolve` statements.
  * @returns An esbuild plugin.
  */
-export default function () {
+export default function (options: Options = {}) {
   const plugin: Plugin = {
     name: 'require-resolve',
     setup(build) {
@@ -210,6 +219,15 @@ export default function () {
               let content = outputFile.text
               for (const [placeholder, filePath] of pathsToRewrite) {
                 content = content.replace(placeholder, () => {
+                  if (options.installDir) {
+                    const installDir =
+                      initialOptions.outdir ?? path.dirname(outputFile.path)
+                    return path.resolve(
+                      installDir,
+                      options.installDir,
+                      path.relative(installDir, filePath)
+                    )
+                  }
                   return resolveRelativeImport(outputFile.path, filePath)
                 })
               }

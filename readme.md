@@ -19,6 +19,40 @@ await esbuild.build({
 })
 ```
 
+## Options
+
+You can pass an options object to the plugin:
+
+```ts
+import requireResolvePlugin from 'esbuild-plugin-require-resolve'
+import esbuild from 'esbuild'
+
+await esbuild.build({
+  plugins: [
+    requireResolvePlugin({
+      // Options go here
+    }),
+  ],
+})
+```
+
+### `installDir`
+
+- **Type:** `string`
+- **Default:** `undefined`
+
+This option allows you to specify a directory prefix for the rewritten `require` and `require.resolve` paths. When `installDir` is provided, the plugin calculates the final path like this:
+
+```ts
+path.resolve(outputDir, installDir, relativePathToDependency)
+```
+
+- **outputDir**: This is the esbuild `outdir` if specified, otherwise it's the directory of the output bundle file. (Won't be used if `installDir` is absolute.)
+- **installDir**: The value you provide for this option.
+- **relativePathToDependency**: The path from the `outputDir` to the copied dependency file.
+
+This is useful if you need the resolved paths in your bundled code to point to a specific installation directory structure (prefixed by `installDir`) relative to your main output directory, rather than being directly relative to the output bundle file itself.
+
 ## Handling Native Node Modules (`.node` files)
 
 The plugin automatically detects `require()` calls that target `.node` files (native Node.js addons). It performs the following actions:
